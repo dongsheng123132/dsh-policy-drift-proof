@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dsh-policy-drift-proof": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./mcp-server.mjs"]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "dsh-policy-drift-proof",
+  "version": "0.1.0",
+  "description": "Content-addressed, value-redacted policy drift evidence for DeepSeek Harness",
+  "author": { "name": "2Origin", "url": "https://github.com/dongsheng123132" },
+  "homepage": "https://github.com/dongsheng123132/dsh-policy-drift-proof#readme",
+  "repository": "https://github.com/dongsheng123132/dsh-policy-drift-proof",
+  "license": "MIT",
+  "keywords": ["deepseek-harness", "policy-drift", "configuration", "evidence"],
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "DSH Policy Drift Proof",
+    "shortDescription": "Verify policy drift without exposing values.",
+    "longDescription": "Compare pinned baseline and observed DSH policy snapshots, classify weakening, tightening, exact and unclassified drift, and emit a content-addressed value-redacted report.",
+    "developerName": "2Origin",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Audit"],
+    "defaultPrompt": ["Verify these pinned DSH policy snapshots and show the drift verdict."]
+  }
+}

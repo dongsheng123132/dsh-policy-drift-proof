@@ -1,0 +1,40 @@
+# dsh-policy-drift-proof
+
+面向 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的只读、内容寻址策略/配置漂移证据插件。
+
+它不执行策略、不审批工具调用、不扫描仓库，也不修复配置。`dsh-tool-policy` 已经负责调用前策略路由，SecurStack 已经负责安全扫描和策略门；本插件只回答缺失的证据问题：显式观测到的策略快照是否偏离固定基线，以及变化属于权限放宽、收紧、精确漂移还是未分类漂移。
+
+## 证据模型
+
+Manifest 用 SHA-256 和 revision 固定 baseline/observed 两份 `policy-snapshot/v1`，并用 JSON Pointer 规则覆盖控制面：
+
+- `ordered-not-weaker`：枚举从严格到宽松排列，向右移动即失败；
+- `set-no-additions`：新增权限失败，删除权限记为收紧；
+- `exact`：任何改变都失败；
+- 覆盖范围内没有规则解释的改变，按 `UNCLASSIFIED_DRIFT` 失败闭合。
+
+报告只含路径、分类和摘要，不含任何策略原值。秘密形字段、原始输出字段、绝对路径、目录逃逸、symlink、超大输入和过度复杂结构都会被拒绝。工具不联网、不启动子进程，只向显式 `artifactDir` 写一个内容寻址 JSON，并回读核验。
+
+`verified` 只表示两份快照的哈希和 revision 与 manifest 一致，且没有放宽、精确或未分类违规。权限收紧仍以 `driftStatus: "changed"` 可观察。它是输入证据的判决，不是安全认证。
+
+## 使用
+
+```sh
+node bin/dsh-policy-drift-proof.mjs verify \
+  --workspace examples/basic \
+  --manifest policy-drift.manifest.json \
+  --artifactDir artifacts
+```
+
+DSH bundle 注册两个工具：`dsh_policy_drift_inspect`、`dsh_policy_drift_verify`；MCP 伴随服务器注册对应的 inspect/verify 工具。
+
+## 验证
+
+```sh
+npm test
+npm run check
+npm run smoke:mcp
+python C:/Users/ZhuanZ/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
+```
+
+GitHub Actions 在 Ubuntu 和 Windows 上运行。许可证：MIT。

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "policyId": "example-policy",
+  "baseline": {
+    "path": "snapshots/baseline.json",
+    "sha256": "d47174b1fbb24e3e525ee1fa79f256d0b35210bc9ac27188c33b79621f053ce3",
+    "revision": "baseline-1"
+  },
+  "observed": {
+    "path": "snapshots/observed.json",
+    "sha256": "3fd92472dcd1ec35c28d31e6f2b96257d60fc98fa4b48184821dae297099e6eb",
+    "revision": "observed-1"
+  },
+  "coverageRoots": ["/controls"],
+  "rules": [
+    { "id": "approval-not-weaker", "path": "/controls/approval/mode", "kind": "ordered-not-weaker", "severity": "critical", "order": ["always", "on-request", "never"] },
+    { "id": "sandbox-not-weaker", "path": "/controls/sandbox/mode", "kind": "ordered-not-weaker", "severity": "critical", "order": ["read-only", "workspace-write", "unrestricted"] },
+    { "id": "tools-no-additions", "path": "/controls/tools/allow", "kind": "set-no-additions", "severity": "high" },
+    { "id": "plugins-exact", "path": "/controls/plugins", "kind": "exact", "severity": "high" }
+  ]
+}

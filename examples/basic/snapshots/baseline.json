@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "policyId": "example-policy",
+  "revision": "baseline-1",
+  "controls": {
+    "approval": { "mode": "always" },
+    "sandbox": { "mode": "read-only" },
+    "tools": { "allow": ["read", "search"] },
+    "plugins": { "core": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
+  }
+}
