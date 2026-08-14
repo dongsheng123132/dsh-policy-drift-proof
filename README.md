@@ -1,5 +1,10 @@
 # dsh-policy-drift-proof
 
+[![CI](https://github.com/dongsheng123132/dsh-policy-drift-proof/actions/workflows/check.yml/badge.svg)](https://github.com/dongsheng123132/dsh-policy-drift-proof/actions/workflows/check.yml)
+[![MIT license](https://img.shields.io/github/license/dongsheng123132/dsh-policy-drift-proof)](LICENSE)
+[![Node.js 22+](https://img.shields.io/badge/Node.js-%E2%89%A522-339933?logo=nodedotjs&logoColor=white)](package.json)
+[![Awesome DSH Plugins](https://img.shields.io/badge/Awesome_DSH-verified_lab-0969da)](https://github.com/dongsheng123132/awesome-dsh-plugins#2origin-plugin-lab)
+
 Read-only, content-addressed policy/configuration drift evidence for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 
 This plugin does **not** enforce tool calls, approve actions, scan repositories, or repair configuration. `dsh-tool-policy` already provides pre-execution policy routing, while SecurStack provides security scans and policy gates. This plugin covers the missing evidence question: did the policy snapshot actually observed by an operator differ from the pinned baseline, and was the difference weakening, tightening, exact, or unclassified?
