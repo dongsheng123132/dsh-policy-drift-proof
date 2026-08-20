@@ -7,6 +7,8 @@
 
 Read-only, content-addressed policy/configuration drift evidence for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 
+Version 0.2 adds host-neutral DSH ToolDefinitions, a proof-only inline Codex MCP surface, real ToolRuntime calls and a stock Web Loader regression. The package exposes namespace exports only and does not bundle a second DSH runtime.
+
 This plugin does **not** enforce tool calls, approve actions, scan repositories, or repair configuration. `dsh-tool-policy` already provides pre-execution policy routing, while SecurStack provides security scans and policy gates. This plugin covers the missing evidence question: did the policy snapshot actually observed by an operator differ from the pinned baseline, and was the difference weakening, tightening, exact, or unclassified?
 
 ## Evidence model
@@ -49,14 +51,17 @@ The bundle registers:
 - `dsh_policy_drift_inspect`
 - `dsh_policy_drift_verify`
 
-The companion stdio MCP server exposes `policy_drift_inspect` and `policy_drift_verify` through `.mcp.json`.
+The companion stdio MCP server exposes `policy_drift_inspect` and `policy_drift_verify` through `.mcp.json`. MCP accepts an inline manifest and pinned inline snapshots, performs no filesystem/network/subprocess/write operations, rejects secret- and raw-output-shaped fields, and never returns policy values. DSH and CLI remain the surfaces for workspace-bound files and content-addressed report publication.
 
 ## Verification
 
 ```sh
 npm test
 npm run check
+npm run smoke:plugin
 npm run smoke:mcp
+DSH_CHECKOUT=/path/to/built/deepseek-harness npm run smoke:dsh
+DSH_CHECKOUT=/path/to/built/deepseek-harness DSH_HOME=/path/to/isolated-home npm run smoke:web-loader
 python C:/Users/ZhuanZ/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
 ```
 

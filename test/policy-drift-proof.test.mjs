@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
-import { inspectPolicyDrift, verifyPolicyDrift } from '../lib/policy-drift-proof.mjs'
+import { inspectPolicyDrift, inspectPolicyDriftManifestJson, verifyPolicyDrift, verifyPolicyDriftSnapshotsJson } from '../lib/policy-drift-proof.mjs'
 
 const sha = (value) => createHash('sha256').update(value).digest('hex')
 const baseControls = { approval: { mode: 'always' }, sandbox: { mode: 'read-only' }, tools: { allow: ['read', 'search'] }, plugins: { core: 'a'.repeat(64) } }
@@ -35,7 +35,7 @@ test('unchanged pinned snapshots produce a content-addressed verified report', a
   const root = await fixture(); t.after(() => rm(root, { recursive: true, force: true }))
   const result = await verifyPolicyDrift({ workspaceRoot: root, manifestPath: 'manifest.json', artifactDir: 'artifacts' })
   assert.equal(result.status, 'verified'); assert.equal(result.comparison.driftStatus, 'unchanged'); assert.ok(result.artifact.path.includes(result.artifact.sha256))
-  assert.equal(sha(await readFile(path.join(root, result.artifact.path))), result.artifact.sha256)
+  assert.equal(sha(await readFile(path.join(root, result.artifact.path))), result.artifact.sha256); assert.equal(result.artifact.verifiedByReadBack, true); assert.ok(result.artifact.bytes > 0)
 })
 
 test('ordered permission weakening fails without returning values', async (t) => {
@@ -79,4 +79,17 @@ test('symlink snapshot is rejected when the platform permits creating it', async
   const root = await fixture(); t.after(() => rm(root, { recursive: true, force: true })); await rm(path.join(root, 'snapshots/observed.json'))
   try { await symlink(path.join(root, 'snapshots/baseline.json'), path.join(root, 'snapshots/observed.json'), 'file') } catch (error) { if (['EPERM', 'EACCES'].includes(error.code)) return t.skip('symlink creation unavailable'); throw error }
   await assert.rejects(() => verifyPolicyDrift({ workspaceRoot: root, manifestPath: 'manifest.json', artifactDir: 'artifacts' }), { code: 'UNSAFE_PATH' })
+})
+
+test('inline snapshot proof compares pinned policy without filesystem access or value output', async (t) => {
+  const root = await fixture(); t.after(() => rm(root, { recursive: true, force: true }))
+  const manifestJson = await readFile(path.join(root, 'manifest.json'), 'utf8'); const baselineSnapshotJson = await readFile(path.join(root, 'snapshots/baseline.json'), 'utf8'); const observedSnapshotJson = await readFile(path.join(root, 'snapshots/observed.json'), 'utf8')
+  const inspected = inspectPolicyDriftManifestJson(manifestJson); const result = verifyPolicyDriftSnapshotsJson(manifestJson, baselineSnapshotJson, observedSnapshotJson); const rendered = JSON.stringify(result)
+  assert.equal(inspected.filesystemAccess, false); assert.equal(result.status, 'verified'); assert.equal(result.returnsPolicyValues, false); assert.equal(result.executesActions, false); assert.ok(!rendered.includes('read-only')); assert.ok(!rendered.includes('always'))
+})
+
+test('inline snapshot proof rejects secret-shaped policy fields', async (t) => {
+  const root = await fixture(); t.after(() => rm(root, { recursive: true, force: true }))
+  const manifestJson = await readFile(path.join(root, 'manifest.json'), 'utf8'); const baselineSnapshotJson = await readFile(path.join(root, 'snapshots/baseline.json'), 'utf8'); const observed = JSON.parse(await readFile(path.join(root, 'snapshots/observed.json'), 'utf8')); observed.controls.network = { apiToken: 'must-not-echo' }
+  assert.throws(() => verifyPolicyDriftSnapshotsJson(manifestJson, baselineSnapshotJson, JSON.stringify(observed)), { code: 'FORBIDDEN_FIELD' })
 })

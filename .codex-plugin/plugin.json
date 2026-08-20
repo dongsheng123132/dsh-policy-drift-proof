@@ -1,6 +1,6 @@
 {
   "name": "dsh-policy-drift-proof",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Content-addressed, value-redacted policy drift evidence for DeepSeek Harness",
   "author": { "name": "2Origin", "url": "https://github.com/dongsheng123132" },
   "homepage": "https://github.com/dongsheng123132/dsh-policy-drift-proof#readme",

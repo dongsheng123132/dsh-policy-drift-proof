@@ -28,6 +28,6 @@ try {
   const tools = ctx.get('tools'); const schemas = tools.schemas(); const names = schemas.filter(({ name }) => name.startsWith('dsh_policy_drift_')).map(({ name }) => name)
   assert.deepEqual(names, ['dsh_policy_drift_inspect', 'dsh_policy_drift_verify'])
   const result = await tools.execute({ signal: new AbortController().signal, callId: 'policy-drift-verify-smoke', name: 'dsh_policy_drift_verify', arguments: { manifestPath: 'manifest.json', artifactDir: 'artifacts' } })
-  assert.equal(result.isError, false); assert.equal(result.value.status, 'verified'); assert.equal(result.value.returnsPolicyValues, false)
-  process.stdout.write(`${JSON.stringify({ ok: true, dshTools: names, status: result.value.status, reportSha256: result.value.artifact.sha256 })}\n`)
+  assert.equal(result.isError, false); assert.equal(result.value.status, 'verified'); assert.equal(result.value.returnsPolicyValues, false); assert.equal(result.value.artifact.verifiedByReadBack, true)
+  process.stdout.write(`${JSON.stringify({ ok: true, dshTools: names, status: result.value.status, artifact: result.value.artifact })}\n`)
 } finally { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) }

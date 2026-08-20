@@ -7,6 +7,8 @@
 
 面向 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的只读、内容寻址策略/配置漂移证据插件。
 
+0.2 版补齐宿主中立的 DSH ToolDefinition、只处理内联证据的 Codex MCP、真实 ToolRuntime 调用与 stock Web Loader 回归。包入口只导出 namespace，不捆绑第二套 DSH 运行时。
+
 它不执行策略、不审批工具调用、不扫描仓库，也不修复配置。`dsh-tool-policy` 已经负责调用前策略路由，SecurStack 已经负责安全扫描和策略门；本插件只回答缺失的证据问题：显式观测到的策略快照是否偏离固定基线，以及变化属于权限放宽、收紧、精确漂移还是未分类漂移。
 
 ## 证据模型
@@ -31,14 +33,17 @@ node bin/dsh-policy-drift-proof.mjs verify \
   --artifactDir artifacts
 ```
 
-DSH bundle 注册两个工具：`dsh_policy_drift_inspect`、`dsh_policy_drift_verify`；MCP 伴随服务器注册对应的 inspect/verify 工具。
+DSH bundle 注册两个工具：`dsh_policy_drift_inspect`、`dsh_policy_drift_verify`；MCP 伴随服务器注册对应的 inspect/verify 工具，但只接受内联 manifest 和固定的内联 snapshot，不读写文件、不联网、不启动子进程、不执行或修复策略，拒绝秘密/原始输出形字段且从不返回策略原值。工作区文件核验与内容寻址报告发布仍走 DSH 或 CLI。
 
 ## 验证
 
 ```sh
 npm test
 npm run check
+npm run smoke:plugin
 npm run smoke:mcp
+DSH_CHECKOUT=/path/to/built/deepseek-harness npm run smoke:dsh
+DSH_CHECKOUT=/path/to/built/deepseek-harness DSH_HOME=/path/to/isolated-home npm run smoke:web-loader
 python C:/Users/ZhuanZ/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
 ```
 
